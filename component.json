@@ -1,0 +1,8 @@
+{
+    "name": "meadowlark-web",
+    "version": "0.0.1",
+    "main": "assets/js/app.js",
+    "dependencies": {
+        "angular": "1.0.6"
+    }
+}
