@@ -40,7 +40,7 @@ function MainController($rootScope, $scope, $route, $routeParams, $location) {
     // Sayfa başlığını değiştirir.
     $scope.$on('setPageHeader', function(event, page_header){
         $scope.page_header = page_header;
-        $scope.$emit('changeTitle', page_header);
+        $scope.$emit('setTitle', page_header);
     });
 
     $scope.$on('setPageHeaderVisibility', function(event, status){
