@@ -2,6 +2,6 @@
 	"name": "meadowlark-web",
 	"version": "0.0.1",
 	"dependencies": {
-		"remote": "0.2.2"
+    	"send" : "0.1.0"
 	}
 }

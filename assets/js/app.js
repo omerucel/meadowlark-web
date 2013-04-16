@@ -18,12 +18,10 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
 
 angular.module('meadowlarkServices', ['ngResource'])
     .factory('AccessTokens', function($resource){
-        return $resource('/api/v1/access-tokens', 
-            {email: '@email', password: '@password'});
+        return $resource('/api/v1/access-tokens');
     })
     .factory('Users', function($resource){
-        return $resource('/api/v1/users', 
-            {username: '@username', email: '@email', password: '@password'});
+        return $resource('/api/v1/users');
     });
 
 function MainController($rootScope, $scope, $route, $routeParams, $location) {
@@ -75,8 +73,11 @@ function LoginController($scope, AccessTokens) {
     $scope.$emit('setPageHeaderVisibility', true);
 
     $scope.send = function(user){
-        var accessToken = new AccessTokens(user);
-        accessToken.$save();
+        AccessTokens.save(user, function(response){
+            console.log(response);
+        }, function(error){
+            console.log(error);
+        });
     };
 }
 
@@ -86,7 +87,5 @@ function RegisterController($scope, Users) {
     $scope.$emit('setPageHeaderVisibility', true);
 
     $scope.send = function(user){
-        var user = new MeadowlarkUsers(user);
-        user.$save();
     };
 }
