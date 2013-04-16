@@ -1,8 +1,9 @@
 {
-    "name": "meadowlark-web",
-    "version": "0.0.1",
-    "main": "assets/js/app.js",
-    "dependencies": {
-        "angular": "1.0.6"
-    }
+  "name": "meadowlark-web",
+  "version": "0.0.1",
+  "main": "assets/js/app.js",
+  "dependencies": {
+    "angular": "1.0.6",
+    "bootstrap-assets": "~2.3.1"
+  }
 }
