@@ -2,18 +2,62 @@
 <html ng-app="meadowlark">
     <head>
         <meta charset="utf-8" />
-        <title>Meadowlark</title>
+        <title>{{title}}</title>
+
+        <link href='http://fonts.googleapis.com/css?family=Fjalla+One|Comfortaa:400,300,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
         <script src="components/angular/angular.min.js"></script>
-        <script src="assets/js/app.js"></script>
 
         <link rel="stylesheet" type="text/css" href="components/bootstrap-assets/css/bootstrap.css" />
         <script src="components/jquery/jquery.min.js"></script>
         <script src="components/bootstrap-assets/js/bootstrap.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="assets/css/app.css?v=1" />
+        <script src="assets/js/app.js?v=1"></script>
     </head>
     <body>
         <div ng-controller="MainController">
-            Main Controller
+
+            <div id="header">
+                <div class="container">
+                    <div class="row">
+                        <div class="span12">
+                            <a class="brand pull-left" href="#/">Meadowlark</a>
+                            <ul class="nav nav-pills pull-left">
+                                <li ng-class="isCurrentMenu('homepage')"><a href="#/">Anasayfa</a></li>
+                                <li ng-class="isCurrentMenu('account')"><a href="#/account">Hesabım</a></li>
+                                <li ng-class="isCurrentMenu('file-manager')"><a href="#/file-manager">Dosya Yöneticisi</a></li>
+                                <li ng-class="isCurrentMenu('history')"><a href="#/history">İşlem Geçmişi</a></li>
+                            </ul>
+                            <ul class="nav nav-pills pull-right">
+                                <li ng-class="isCurrentMenu('login')"><a href="#/login">Oturum Aç</a></li>
+                                <li ng-class="isCurrentMenu('register')"><a href="#/register">Kayıt Ol</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-header" ng-show="page_header_visibility">
+                <div class="container">
+                    <div class="row">
+                        <div class="span12">
+                            <div class="page-header">
+                                <h1>{{page_header}}</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div ng-view></div>
+
+            <div id="footer">
+                <div class="container">
+                    <div class="row12">
+
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 </html>
