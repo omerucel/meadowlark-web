@@ -4,6 +4,7 @@
   "main": "assets/js/app.js",
   "dependencies": {
     "angular": "1.0.6",
-    "bootstrap-assets": "~2.3.1"
+    "bootstrap-assets": "~2.3.1",
+    "angular-resource": "~1.0.6"
   }
 }

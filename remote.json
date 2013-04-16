@@ -1,0 +1,10 @@
+{
+	"directory": "./",
+	"remote": {"host": "localhost", "port": "8080"},
+	"bounces": [
+		"index.html",
+		"assets/*",
+		"components/*",
+		"partials/*"
+	]
+}

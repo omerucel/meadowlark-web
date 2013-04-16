@@ -1,4 +1,4 @@
-angular.module('meadowlark', [])
+var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
     .config(['$routeProvider', function($routeProvider){
         $routeProvider
             .when('/', {
@@ -15,6 +15,16 @@ angular.module('meadowlark', [])
             })
             .otherwise({redirectTo: '/'});
     }]);
+
+angular.module('meadowlarkServices', ['ngResource'])
+    .factory('AccessTokens', function($resource){
+        return $resource('/api/v1/access-tokens', 
+            {email: '@email', password: '@password'});
+    })
+    .factory('Users', function($resource){
+        return $resource('/api/v1/users', 
+            {username: '@username', email: '@email', password: '@password'});
+    });
 
 function MainController($rootScope, $scope, $route, $routeParams, $location) {
     $scope.$route = $route;
@@ -59,14 +69,24 @@ function HomepageController($scope) {
     $scope.$emit('setPageHeaderVisibility', false);
 }
 
-function LoginController($scope) {
+function LoginController($scope, AccessTokens) {
     $scope.$emit('setPageHeader', 'Oturum Aç');
     $scope.$emit('setCurrentMenu', 'login');
     $scope.$emit('setPageHeaderVisibility', true);
+
+    $scope.send = function(user){
+        var accessToken = new AccessTokens(user);
+        accessToken.$save();
+    };
 }
 
-function RegisterController($scope) {
+function RegisterController($scope, Users) {
     $scope.$emit('setPageHeader', 'Kayıt Ol');
     $scope.$emit('setCurrentMenu', 'register');
     $scope.$emit('setPageHeaderVisibility', true);
+
+    $scope.send = function(user){
+        var user = new MeadowlarkUsers(user);
+        user.$save();
+    };
 }
