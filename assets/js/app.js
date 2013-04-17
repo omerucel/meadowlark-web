@@ -17,22 +17,57 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
                 templateUrl: 'partials/register.html',
                 controller: RegisterController
             })
-            .when('/logout', {
-                templateUrl: 'partials/logout.html',
-                controller: LogoutController
+            .when('/account', {
+                templateUrl: 'partials/account.html',
+                controller: AccountController
             })
             .otherwise({redirectTo: '/'});
     }]);
 
 angular.module('meadowlarkServices', ['ngResource'])
-    .factory('AccessTokens', function($resource){
-        return $resource('/api/v1/access-tokens');
-    })
-    .factory('Users', function($resource){
-        return $resource('/api/v1/users');
+    .factory('UserResource', function($resource, $location){
+        return {
+            is_authenticated: false,
+            data: {
+                token: null,
+                user: {
+                    id: null,
+                    email: null,
+                    username: null
+                }
+            },
+            login: function(request, successCallback, errorCallback){
+                var self = this;
+
+                $resource('/api/v1/access-tokens').save(request, function(response){
+                    self.data = response;
+                    self.is_authenticated = true;
+                    successCallback();
+                }, errorCallback);
+            },
+            logout: function(successCallback, errorCallback){
+                $location.path('/login');
+                this.is_authenticated = false;
+
+                $resource('/api/v1/access-tokens').remove({
+                    access_token: this.data.token
+                }, successCallback, errorCallback);
+            },
+            register: function(request, successCallback, errorCallback){
+                var self = this;
+
+                $resource('/api/v1/users').save(request, function(response){
+                    self.data = response;
+                    self.is_authenticated = true;
+                    successCallback();
+                }, errorCallback);
+            }
+        }
+        return ;
     });
 
-function MainController($rootScope, $scope, $route, $routeParams, $location) {
+function MainController($rootScope, $scope, $route, $routeParams, $location, UserResource) {
+    $scope.UserResource = UserResource;
     $scope.$route = $route;
     $scope.$location = $location;
     $scope.$routeParams = $routeParams;
@@ -67,11 +102,6 @@ function MainController($rootScope, $scope, $route, $routeParams, $location) {
     $scope.$on('setCurrentMenu', function(event, menu){
         $scope.current_menu = menu;
     });
-
-    $scope.$on('setCurrentUser', function(event, user){
-        $scope.current_user = user;
-        $scope.is_authenticated = user != null;
-    });
 }
 
 function HomepageController($scope) {
@@ -80,7 +110,7 @@ function HomepageController($scope) {
     $scope.$emit('setPageHeaderVisibility', false);
 }
 
-function LoginController($scope, $location, AccessTokens) {
+function LoginController($scope, $location, UserResource) {
     $scope.$emit('setPageHeader', 'Oturum Aç');
     $scope.$emit('setCurrentMenu', 'login');
     $scope.$emit('setPageHeaderVisibility', true);
@@ -89,9 +119,8 @@ function LoginController($scope, $location, AccessTokens) {
     $scope.form_error = '';
 
     $scope.send = function(user){
-        AccessTokens.save(user, function(response){
-            $scope.$emit('setCurrentUser', response);
-            $location.path('/');
+        UserResource.login(user, function(){
+            $location.path('/account');
         }, function(response){
             $scope.form_error_visibility = true;
 
@@ -107,7 +136,7 @@ function LoginController($scope, $location, AccessTokens) {
     };
 }
 
-function RegisterController($scope, $location, Users) {
+function RegisterController($scope, $location, UserResource) {
     $scope.$emit('setPageHeader', 'Kayıt Ol');
     $scope.$emit('setCurrentMenu', 'register');
     $scope.$emit('setPageHeaderVisibility', true);
@@ -116,8 +145,7 @@ function RegisterController($scope, $location, Users) {
     $scope.form_error = '';
 
     $scope.send = function(user){
-        Users.save(user, function(response){
-            $scope.$emit('setCurrentUser', response);
+        UserResource.register(user, function(){
             $location.path('/welcome');
         }, function(response){
             $scope.form_error_visibility = true;
@@ -141,13 +169,12 @@ function RegisterController($scope, $location, Users) {
     };
 }
 
-function LogoutController($scope, $location) {
-    $scope.$emit('setPageHeader', 'Oturumunuz Kapandı');
-    $scope.$emit('setCurrentUser', null);
-    $location.path('/login');
-}
-
-function WelcomeController($scope) {
+function WelcomeController($scope, UserResource) {
     $scope.$emit('setPageHeader', 'Hoş geldiniz!');
     $scope.$emit('setCurrentMenu', '');
+}
+
+function AccountController($scope) {
+    $scope.$emit('setPageHeader', 'Hesabım');
+    $scope.$emit('setCurrentMenu', 'account');
 }
