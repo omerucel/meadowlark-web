@@ -12,8 +12,8 @@
         <script src="components/jquery/jquery.min.js"></script>
         <script src="components/bootstrap-assets/js/bootstrap.min.js"></script>
 
-        <link rel="stylesheet" type="text/css" href="assets/css/app.css?v=1" />
-        <script src="assets/js/app.js?v=1"></script>
+        <link rel="stylesheet" type="text/css" href="assets/css/app.css?v=2" />
+        <script src="assets/js/app.js?v=2"></script>
     </head>
     <body>
         <div ng-controller="MainController">
@@ -29,9 +29,12 @@
                                 <li ng-class="isCurrentMenu('file-manager')"><a href="#/file-manager">Dosya Yöneticisi</a></li>
                                 <li ng-class="isCurrentMenu('history')"><a href="#/history">İşlem Geçmişi</a></li>
                             </ul>
-                            <ul class="nav nav-pills pull-right">
+                            <ul class="nav nav-pills pull-right" ng-hide="is_authenticated">
                                 <li ng-class="isCurrentMenu('login')"><a href="#/login">Oturum Aç</a></li>
                                 <li ng-class="isCurrentMenu('register')"><a href="#/register">Kayıt Ol</a></li>
+                            </ul>
+                            <ul class="nav nav-pills pull-right" ng-show="is_authenticated">
+                                <li><a href="#/logout">Oturumu Kapat</a></li>
                             </ul>
                         </div>
                     </div>

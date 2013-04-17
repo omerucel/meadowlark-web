@@ -5,6 +5,10 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
                 templateUrl: 'partials/homepage.html',
                 controller: HomepageController
             })
+            .when('/welcome', {
+                templateUrl: 'partials/welcome.html',
+                controller: WelcomeController
+            })
             .when('/login', {
                 templateUrl: 'partials/login.html',
                 controller: LoginController
@@ -12,6 +16,10 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
             .when('/register', {
                 templateUrl: 'partials/register.html',
                 controller: RegisterController
+            })
+            .when('/logout', {
+                templateUrl: 'partials/logout.html',
+                controller: LogoutController
             })
             .otherwise({redirectTo: '/'});
     }]);
@@ -59,6 +67,11 @@ function MainController($rootScope, $scope, $route, $routeParams, $location) {
     $scope.$on('setCurrentMenu', function(event, menu){
         $scope.current_menu = menu;
     });
+
+    $scope.$on('setCurrentUser', function(event, user){
+        $scope.current_user = user;
+        $scope.is_authenticated = user != null;
+    });
 }
 
 function HomepageController($scope) {
@@ -67,7 +80,7 @@ function HomepageController($scope) {
     $scope.$emit('setPageHeaderVisibility', false);
 }
 
-function LoginController($scope, AccessTokens) {
+function LoginController($scope, $location, AccessTokens) {
     $scope.$emit('setPageHeader', 'Oturum Aç');
     $scope.$emit('setCurrentMenu', 'login');
     $scope.$emit('setPageHeaderVisibility', true);
@@ -77,7 +90,8 @@ function LoginController($scope, AccessTokens) {
 
     $scope.send = function(user){
         AccessTokens.save(user, function(response){
-            console.log(response);
+            $scope.$emit('setCurrentUser', response);
+            $location.path('/');
         }, function(response){
             $scope.form_error_visibility = true;
 
@@ -93,7 +107,7 @@ function LoginController($scope, AccessTokens) {
     };
 }
 
-function RegisterController($scope, Users) {
+function RegisterController($scope, $location, Users) {
     $scope.$emit('setPageHeader', 'Kayıt Ol');
     $scope.$emit('setCurrentMenu', 'register');
     $scope.$emit('setPageHeaderVisibility', true);
@@ -103,7 +117,8 @@ function RegisterController($scope, Users) {
 
     $scope.send = function(user){
         Users.save(user, function(response){
-            console.log(response);
+            $scope.$emit('setCurrentUser', response);
+            $location.path('/welcome');
         }, function(response){
             $scope.form_error_visibility = true;
             var response_data = angular.isObject(response.data) ? response.data : {};
@@ -124,4 +139,15 @@ function RegisterController($scope, Users) {
             }
         });
     };
+}
+
+function LogoutController($scope, $location) {
+    $scope.$emit('setPageHeader', 'Oturumunuz Kapandı');
+    $scope.$emit('setCurrentUser', null);
+    $location.path('/login');
+}
+
+function WelcomeController($scope) {
+    $scope.$emit('setPageHeader', 'Hoş geldiniz!');
+    $scope.$emit('setCurrentMenu', '');
 }
