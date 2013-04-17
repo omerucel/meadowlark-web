@@ -72,11 +72,23 @@ function LoginController($scope, AccessTokens) {
     $scope.$emit('setCurrentMenu', 'login');
     $scope.$emit('setPageHeaderVisibility', true);
 
+    $scope.form_error_visibility = false;
+    $scope.form_error = '';
+
     $scope.send = function(user){
         AccessTokens.save(user, function(response){
             console.log(response);
-        }, function(error){
-            console.log(error);
+        }, function(response){
+            $scope.form_error_visibility = true;
+
+            if (response.status == 400)
+            {
+                $scope.form_error = 'Lütfen formu doğru bir şekilde doldurunuz.';
+            }else if(response.status == 401){
+                $scope.form_error = 'Sistemde girdiğiniz bilgilere bağlı bir hesap bulunamadı.';
+            }else{
+                $scope.form_error = 'Oturum açma işlemi sırasında bir sorun oluştu. Lütfen bir süre sonra tekrar deneyiniz!';
+            }
         });
     };
 }
@@ -86,6 +98,30 @@ function RegisterController($scope, Users) {
     $scope.$emit('setCurrentMenu', 'register');
     $scope.$emit('setPageHeaderVisibility', true);
 
+    $scope.form_error_visibility = false;
+    $scope.form_error = '';
+
     $scope.send = function(user){
+        Users.save(user, function(response){
+            console.log(response);
+        }, function(response){
+            $scope.form_error_visibility = true;
+            var response_data = angular.isObject(response.data) ? response.data : {};
+            var validation_errors = angular.isObject(response_data.validation_errors) ? response_data.validation_errors : {};
+
+            if (response.status == 400)
+            {
+                if (angular.isArray(validation_errors.username) && validation_errors.username[0] == 'already-in-use')
+                    $scope.form.username.$alreadyInUse = true;
+                if (angular.isArray(validation_errors.email) && validation_errors.email[0] == 'already-in-use')
+                    $scope.form.email.$alreadyInUse = true;
+
+                $scope.form_error = 'Lütfen formu doğru bir şekilde doldurunuz.';
+            }else if(response.status == 401){
+                $scope.form_error = 'Sistemde girdiğiniz bilgilere bağlı bir hesap bulunamadı.';
+            }else{
+                $scope.form_error = 'Oturum açma işlemi sırasında bir sorun oluştu. Lütfen bir süre sonra tekrar deneyiniz!';
+            }
+        });
     };
 }
