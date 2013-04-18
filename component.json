@@ -5,6 +5,8 @@
   "dependencies": {
     "angular": "1.0.6",
     "bootstrap-assets": "~2.3.1",
-    "angular-resource": "~1.0.6"
+    "angular-resource": "~1.0.6",
+    "angular-cookies": "~1.0.6",
+    "PicoModal": "git://github.com/Nycto/PicoModal.git"
   }
 }

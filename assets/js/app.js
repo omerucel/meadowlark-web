@@ -24,9 +24,9 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
             .otherwise({redirectTo: '/'});
     }]);
 
-angular.module('meadowlarkServices', ['ngResource'])
-    .factory('UserResource', function($resource, $location){
-        return {
+angular.module('meadowlarkServices', ['ngResource', 'ngCookies'])
+    .factory('UserResource', function($resource, $location, $cookieStore){
+        var UserResource = {
             is_authenticated: false,
             data: {
                 token: null,
@@ -42,12 +42,14 @@ angular.module('meadowlarkServices', ['ngResource'])
                 $resource('/api/v1/access-tokens').save(request, function(response){
                     self.data = response;
                     self.is_authenticated = true;
+                    $cookieStore.put('data', self.data);
                     successCallback();
                 }, errorCallback);
             },
             logout: function(successCallback, errorCallback){
                 $location.path('/login');
                 this.is_authenticated = false;
+                $cookieStore.remove('data');
 
                 $resource('/api/v1/access-tokens').remove({
                     access_token: this.data.token
@@ -62,8 +64,16 @@ angular.module('meadowlarkServices', ['ngResource'])
                     successCallback();
                 }, errorCallback);
             }
+        };
+
+        data = $cookieStore.get('data');
+        if (data != null)
+        {
+            UserResource.is_authenticated = true;
+            UserResource.data = data;
         }
-        return ;
+
+        return UserResource;
     });
 
 function MainController($rootScope, $scope, $route, $routeParams, $location, UserResource) {
@@ -174,7 +184,13 @@ function WelcomeController($scope, UserResource) {
     $scope.$emit('setCurrentMenu', '');
 }
 
-function AccountController($scope) {
+function AccountController($scope, $location, UserResource) {
+    if (!UserResource.is_authenticated)
+    {
+        $location.path('/login');
+        return;
+    }
+
     $scope.$emit('setPageHeader', 'Hesabım');
     $scope.$emit('setCurrentMenu', 'account');
 }
