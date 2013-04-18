@@ -2,27 +2,57 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
     .config(['$routeProvider', function($routeProvider){
         $routeProvider
             .when('/', {
+                name: 'homepage',
                 templateUrl: 'partials/homepage.html',
                 controller: HomepageController
             })
             .when('/welcome', {
+                name: 'welcome',
                 templateUrl: 'partials/welcome.html',
                 controller: WelcomeController
             })
             .when('/login', {
+                name: 'login',
                 templateUrl: 'partials/login.html',
                 controller: LoginController
             })
             .when('/register', {
+                name: 'register',
                 templateUrl: 'partials/register.html',
                 controller: RegisterController
             })
             .when('/account', {
+                name: 'account',
                 templateUrl: 'partials/account.html',
                 controller: AccountController
             })
             .otherwise({redirectTo: '/'});
-    }]);
+    }])
+    .run(function($rootScope, $location, UserResource){
+        $rootScope.$on('$routeChangeStart', function(event, next, current){
+            if (!UserResource.is_authenticated)
+            {
+                if (next.name == 'account' || next.name == 'welcome')
+                {
+                    next.templateUrl = null;
+                    next.template = "";
+                    picoModal('Önce oturum açmanız gerekiyor!')
+                        .onClose(function(){
+                            $rootScope.$apply(function(){
+                                $location.path('/login');
+                            });
+                        });
+                }
+            }else{
+                if (next.name == 'login' || next.name == 'register')
+                {
+                    next.templateUrl = null;
+                    next.template = "";
+                    $location.path('/account');
+                }
+            }
+        });
+    });
 
 angular.module('meadowlarkServices', ['ngResource', 'ngCookies'])
     .factory('UserResource', function($resource, $location, $cookieStore){
@@ -99,8 +129,9 @@ function MainController($rootScope, $scope, $route, $routeParams, $location, Use
     });
 
     // Sayfa başlığını değiştirir.
-    $scope.$on('setPageHeader', function(event, page_header){
+    $scope.$on('setPageHeader', function(event, page_header, page_header_visibility){
         $scope.page_header = page_header;
+        $scope.page_header_visibility = page_header_visibility;
         $scope.$emit('setTitle', page_header);
     });
 
@@ -115,15 +146,15 @@ function MainController($rootScope, $scope, $route, $routeParams, $location, Use
 }
 
 function HomepageController($scope) {
-    $scope.$emit('setPageHeader', 'Anasayfa');
+    $scope.$emit('setPageHeader', 'Anasayfa', false);
     $scope.$emit('setCurrentMenu', 'homepage');
-    $scope.$emit('setPageHeaderVisibility', false);
 }
 
 function LoginController($scope, $location, UserResource) {
-    $scope.$emit('setPageHeader', 'Oturum Aç');
+    if (UserResource.is_authenticated) return;
+
+    $scope.$emit('setPageHeader', 'Oturum Aç', true);
     $scope.$emit('setCurrentMenu', 'login');
-    $scope.$emit('setPageHeaderVisibility', true);
 
     $scope.form_error_visibility = false;
     $scope.form_error = '';
@@ -147,9 +178,10 @@ function LoginController($scope, $location, UserResource) {
 }
 
 function RegisterController($scope, $location, UserResource) {
-    $scope.$emit('setPageHeader', 'Kayıt Ol');
+    if (UserResource.is_authenticated) return;
+
+    $scope.$emit('setPageHeader', 'Kayıt Ol', true);
     $scope.$emit('setCurrentMenu', 'register');
-    $scope.$emit('setPageHeaderVisibility', true);
 
     $scope.form_error_visibility = false;
     $scope.form_error = '';
@@ -179,18 +211,16 @@ function RegisterController($scope, $location, UserResource) {
     };
 }
 
-function WelcomeController($scope, UserResource) {
-    $scope.$emit('setPageHeader', 'Hoş geldiniz!');
+function WelcomeController($scope, $location, UserResource) {
+    if (!UserResource.is_authenticated) return;
+
+    $scope.$emit('setPageHeader', 'Hoş geldiniz!', true);
     $scope.$emit('setCurrentMenu', '');
 }
 
 function AccountController($scope, $location, UserResource) {
-    if (!UserResource.is_authenticated)
-    {
-        $location.path('/login');
-        return;
-    }
+    if (!UserResource.is_authenticated) return;
 
-    $scope.$emit('setPageHeader', 'Hesabım');
+    $scope.$emit('setPageHeader', 'Hesabım', true);
     $scope.$emit('setCurrentMenu', 'account');
 }
