@@ -1,0 +1,62 @@
+<div class="container">
+	<div class="row">
+		<div class="span6">
+			<div class="row">
+				<div class="span4">
+					<div class="btn-group">
+						<button class="btn"><i class="icon icon-file-alt"></i></button>
+						<button class="btn"><i class="icon icon-folder-close-alt"></i></button>
+						<button class="btn"><i class="icon icon-remove"></i></button>
+						<button class="btn"><i class="icon icon-cloud-download"></i></button>
+						<button class="btn"><i class="icon icon-magic"></i></button>
+					</div>
+				</div>
+				<div class="span2">
+					<strong class="pull-right" style="font-size:11px;color:#ccc;margin-top:5px;">Dosyalar</strong>
+				</div>
+			</div>
+			<div class="file-manager" ng-controller="StageFileManagerController">
+				<!--
+				<ul class="breadcrumb">
+					<li><a href="#">Ana Dizin</a> <span class="divider">/</span></li>
+				  	<li><a href="#">Müzikler</a> <span class="divider">/</span></li>
+					<li class="active">Pop</li>
+				</ul>
+				-->
+				<ul class="nav">
+					<li ng-repeat="item in repo">
+						<a ng-click="FileManager.select(item)" ng-class="{active: FileManager.inSelected(item)}"><i class="icon {{item.icon}}"></i> {{item.name}}</a>
+					</li>
+				<ul>
+			</div>
+		</div>
+		<div class="span6">
+			<div class="row">
+				<div class="span4">
+					<div class="btn-group">
+						<button class="btn"><i class="icon icon-folder-close-alt"></i></button>
+						<button class="btn"><i class="icon icon-remove"></i></button>
+						<button class="btn"><i class="icon icon-cloud-download"></i></button>
+					</div>
+				</div>
+				<div class="span2">
+					<strong class="pull-right" style="font-size:12px;color:#ccc;margin-top:5px;">Dönüştürülen Dosyalar</strong>
+				</div>
+			</div>
+			<div class="file-manager" ng-controller="ProductionFileManagerController">
+				<!--
+				<ul class="breadcrumb">
+					<li><a href="#">Ana Dizin</a> <span class="divider">/</span></li>
+				  	<li><a href="#">Müzikler</a> <span class="divider">/</span></li>
+					<li class="active">Pop</li>
+				</ul>
+				-->
+				<ul class="nav">
+					<li ng-repeat="item in repo">
+						<a ng-click="FileManager.select(item)" ng-class="{active: FileManager.inSelected(item)}"><i class="icon {{item.icon}}"></i> {{item.name}}</a>
+					</li>
+				<ul>
+			</div>
+		</div>
+	</div>
+</div>

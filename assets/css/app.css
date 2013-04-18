@@ -52,3 +52,41 @@ body, html{
 		.page-header h1{
 			font-size: 30px;
 		}
+
+.file-manager{
+	background: #fff;
+	border: 1px solid #ddd;
+	margin: 10px 0;
+	padding: 0 0 5px 0;
+	position: relative;
+}
+
+	.file-manager a{
+		color:#666;
+	}
+
+	.file-manager .breadcrumb{
+		font-size: 10px;
+		margin: 0px;
+		padding: 5px;
+		border-radius: 0;
+	}
+
+	.file-manager .nav{
+		overflow: auto;
+		height: 300px;
+		margin:0px;
+	}
+
+	.file-manager .nav li a{
+		padding:5px;
+		cursor: pointer;
+	}
+
+		.file-manager .nav li a.active{
+			background: #eee;
+		}
+
+		.file-manager .nav li a:hover{
+			background: #ddd;
+		}

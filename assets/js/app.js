@@ -1,4 +1,4 @@
-var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
+angular.module('meadowlark', ['ngResource', 'ngCookies'])
     .config(['$routeProvider', function($routeProvider){
         $routeProvider
             .when('/', {
@@ -26,6 +26,11 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
                 templateUrl: 'partials/account.html',
                 controller: AccountController
             })
+            .when('/file-manager', {
+                name: 'file-manager',
+                templateUrl: 'partials/file_manager.html',
+                controller: FileManagerController
+            })
             .otherwise({redirectTo: '/'});
     }])
     .directive('btnLoading',function () {
@@ -50,7 +55,10 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
         $rootScope.$on('$routeChangeStart', function(event, next, current){
             if (!UserResource.is_authenticated)
             {
-                if (next.name == 'account' || next.name == 'welcome')
+                if (next.name == 'account' 
+                    || next.name == 'welcome'
+                    || next.name == 'file-manager'
+                    || next.name == 'history')
                 {
                     next.templateUrl = null;
                     next.template = "";
@@ -70,9 +78,7 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
                 }
             }
         });
-    });
-
-angular.module('meadowlarkServices', ['ngResource', 'ngCookies'])
+    })
     .factory('LoadingBox', function(){
         var LoadingBox = {
             modal : null,
@@ -99,6 +105,38 @@ angular.module('meadowlarkServices', ['ngResource', 'ngCookies'])
         }
 
         return LoadingBox;
+    })
+    .factory('FileManagerService', function(){
+        return function(repo){
+            var Service = {
+                repo: repo,
+                configs: {},
+                selected_items: {},
+                init: function(repoConfigs){
+                    angular.extends(this.configs, repoConfigs);
+                    return this;
+                },
+                select: function(item) {
+                    if (angular.isObject(this.selected_items[item.id]))
+                    {
+                        delete this.selected_items[item.id];
+                    }else{
+                        this.selected_items[item.id] = item;
+                    }
+                },
+                inSelected: function(item) {
+                    return angular.isObject(this.selected_items[item.id]);
+                }
+            };
+
+            return Service;
+        };
+    })
+    .factory('StageFileManagerService', function(FileManagerService){
+        return FileManagerService('stage');
+    })
+    .factory('ProductionFileManagerService', function(FileManagerService){
+        return FileManagerService('production');
     })
     .factory('UserResource', function($resource, $location, $cookieStore){
         var UserResource = {
@@ -263,16 +301,83 @@ function RegisterController($scope, $location, LoadingBox, UserResource) {
     };
 }
 
-function WelcomeController($scope, $location, UserResource) {
+function WelcomeController($scope, UserResource) {
     if (!UserResource.is_authenticated) return;
 
     $scope.$emit('setPageHeader', 'Hoş geldiniz!', true);
     $scope.$emit('setCurrentMenu', '');
 }
 
-function AccountController($scope, $location, UserResource) {
+function AccountController($scope, UserResource) {
     if (!UserResource.is_authenticated) return;
 
     $scope.$emit('setPageHeader', 'Hesabım', true);
     $scope.$emit('setCurrentMenu', 'account');
+}
+
+function FileManagerController($scope, UserResource) {
+    if (!UserResource.is_authenticated) return;
+
+    $scope.$emit('setPageHeader', 'Dosya Yöneticisi', true);
+    $scope.$emit('setCurrentMenu', 'file-manager');
+
+    $scope.selected_items = {
+        'stage': {},
+        'production': {}
+    }
+
+    $scope.select = function(repo, item) {
+        if (angular.isObject($scope.selected_items[repo][item.id]))
+        {
+            delete $scope.selected_items[repo][item.id];
+        }else{
+            $scope.selected_items[repo][item.id] = item;
+        }
+    };
+
+    $scope.inSelected = function(repo, item) {
+        return angular.isObject($scope.selected_items[repo][item.id]);
+    };
+}
+
+function StageFileManagerController($scope, $rootScope, StageFileManagerService) {
+    $scope.FileManager = StageFileManagerService;
+    $scope.repo = [
+        {
+            'id': 1,
+            'name': 'Müzikler',
+            'icon': 'icon-folder-close'
+        },
+        {
+            'id': 2,
+            'name': 'Videolar',
+            'icon': 'icon-folder-close'
+        },
+        {
+            'id': 3,
+            'name': 'Dosya1.mpg',
+            'icon': 'icon-file'
+        }
+    ];
+}
+
+function ProductionFileManagerController($scope, $rootScope, ProductionFileManagerService) {
+    $scope.FileManager = ProductionFileManagerService;
+    $scope.repo = [
+        {
+            'id': 1,
+            'name': 'Müzikler',
+            'icon': 'icon-folder-close'
+        },
+        {
+            'id': 2,
+            'name': 'Videolar',
+            'icon': 'icon-folder-close'
+        },
+        {
+            'id': 3,
+            'name': 'Dosya1.mpg',
+            'icon': 'icon-file'
+        }
+    ];
 }
