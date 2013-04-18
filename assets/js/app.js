@@ -28,6 +28,24 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
             })
             .otherwise({redirectTo: '/'});
     }])
+    .directive('btnLoading',function () {
+        return function (scope, element, attrs) {
+            scope.$watch(
+                function () {
+                    return scope.$eval(attrs.btnLoading);
+                },
+                function (value) {
+                    if(value) {
+                        element.addClass("disabled").attr("disabled","disabled");
+                        element.data('resetText', element.text());
+                        element.text('Lütfen bekleyiniz...');
+                    } else {
+                        element.text(element.data('resetText'));
+                    }
+                }
+            );
+        };
+    })
     .run(function($rootScope, $location, UserResource){
         $rootScope.$on('$routeChangeStart', function(event, next, current){
             if (!UserResource.is_authenticated)
@@ -55,6 +73,33 @@ var app = angular.module('meadowlark', ['ngResource', 'meadowlarkServices'])
     });
 
 angular.module('meadowlarkServices', ['ngResource', 'ngCookies'])
+    .factory('LoadingBox', function(){
+        var LoadingBox = {
+            modal : null,
+            show: function($scope, message, initCallback, closeCallback){
+                if (angular.isFunction(initCallback))
+                    initCallback();
+
+                this.modal = picoModal({
+                    content: message,
+                    closeButton: false,
+                    overlayClose: false
+                });
+                this.modal.onClose(function(){
+                    $scope.$apply(function(){
+                        if (angular.isFunction(closeCallback))
+                            closeCallback();
+                    });
+                });
+            },
+            hide: function(){
+                if (this.modal != null)
+                    this.modal.close();
+            }
+        }
+
+        return LoadingBox;
+    })
     .factory('UserResource', function($resource, $location, $cookieStore){
         var UserResource = {
             is_authenticated: false,
@@ -150,7 +195,7 @@ function HomepageController($scope) {
     $scope.$emit('setCurrentMenu', 'homepage');
 }
 
-function LoginController($scope, $location, UserResource) {
+function LoginController($scope, $location, LoadingBox, UserResource) {
     if (UserResource.is_authenticated) return;
 
     $scope.$emit('setPageHeader', 'Oturum Aç', true);
@@ -160,9 +205,13 @@ function LoginController($scope, $location, UserResource) {
     $scope.form_error = '';
 
     $scope.send = function(user){
+        LoadingBox.show($scope, 'İşlem gerçekleştiriliyor... Lütfen bekleyiniz...');
+
         UserResource.login(user, function(){
+            LoadingBox.hide();
             $location.path('/account');
         }, function(response){
+            LoadingBox.hide();
             $scope.form_error_visibility = true;
 
             if (response.status == 400)
@@ -177,7 +226,7 @@ function LoginController($scope, $location, UserResource) {
     };
 }
 
-function RegisterController($scope, $location, UserResource) {
+function RegisterController($scope, $location, LoadingBox, UserResource) {
     if (UserResource.is_authenticated) return;
 
     $scope.$emit('setPageHeader', 'Kayıt Ol', true);
@@ -187,9 +236,12 @@ function RegisterController($scope, $location, UserResource) {
     $scope.form_error = '';
 
     $scope.send = function(user){
+        LoadingBox.show($scope, 'İşlem gerçekleştiriliyor... Lütfen bekleyiniz...');
         UserResource.register(user, function(){
+            LoadingBox.hide();
             $location.path('/welcome');
         }, function(response){
+            LoadingBox.hide();
             $scope.form_error_visibility = true;
             var response_data = angular.isObject(response.data) ? response.data : {};
             var validation_errors = angular.isObject(response_data.validation_errors) ? response_data.validation_errors : {};
