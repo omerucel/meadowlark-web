@@ -90,3 +90,14 @@ body, html{
 		.file-manager .nav li a:hover{
 			background: #ddd;
 		}
+
+.dialog-form{
+	margin: 0px;
+}
+	.dialog-form legend{
+		margin-bottom: 5px;
+	}
+
+	.dialog-form legend + .control-group{
+		margin-top: 5px;
+	}

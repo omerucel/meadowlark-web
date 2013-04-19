@@ -51,7 +51,7 @@ angular.module('meadowlark', ['ngResource', 'ngCookies'])
             );
         };
     })
-    .run(function($rootScope, $location, UserResource){
+    .run(function($rootScope, $location, UserResource, DialogBox){
         $rootScope.$on('$routeChangeStart', function(event, next, current){
             if (!UserResource.is_authenticated)
             {
@@ -62,12 +62,11 @@ angular.module('meadowlark', ['ngResource', 'ngCookies'])
                 {
                     next.templateUrl = null;
                     next.template = "";
-                    picoModal('Önce oturum açmanız gerekiyor!')
-                        .onClose(function(){
-                            $rootScope.$apply(function(){
-                                $location.path('/login');
-                            });
+                    DialogBox($rootScope).showMessage('Önce oturum açmanız gerekiyor!', function(){
+                        $rootScope.$apply(function(){
+                            $location.path('/login');
                         });
+                    });
                 }
             }else{
                 if (next.name == 'login' || next.name == 'register')
@@ -79,42 +78,82 @@ angular.module('meadowlark', ['ngResource', 'ngCookies'])
             }
         });
     })
-    .factory('LoadingBox', function(){
-        var LoadingBox = {
-            modal : null,
-            show: function($scope, message, initCallback, closeCallback){
-                if (angular.isFunction(initCallback))
-                    initCallback();
-
-                this.modal = picoModal({
-                    content: message,
-                    closeButton: false,
-                    overlayClose: false
-                });
-                this.modal.onClose(function(){
-                    $scope.$apply(function(){
-                        if (angular.isFunction(closeCallback))
-                            closeCallback();
-                    });
-                });
-            },
-            hide: function(){
-                if (this.modal != null)
-                    this.modal.close();
+    .factory('DialogBox', function($rootScope, $compile){
+        return function(scope){
+            if (scope == null)
+            {
+                scope = $rootScope.$new();
+            }else{
+                scope = scope;
             }
-        }
 
-        return LoadingBox;
+            return {
+                modal: null,
+                scope: scope,
+                showTemplate: function(templateUrl, dialogOptions){
+                    var self = this;
+                    dialogOptions.content = "";
+
+                    var template = document.createElement('div');
+                    template.setAttribute('ng-include', '"' + templateUrl + '"');
+                    element = $compile(template)(self.scope);
+                    self.modal = picoModal(dialogOptions);
+                    self.modal.modalElem.appendChild(element.context);
+                },
+                showMessage: function(options, closeCallback){
+                    this.modal = picoModal(options);
+                    if (angular.isFunction(closeCallback))
+                        this.modal.onClose(closeCallback);
+                },
+                hide: function(){
+                    if (this.modal != null)
+                        this.modal.close();
+                }
+            };
+        };
     })
-    .factory('FileManagerService', function(){
-        return function(repo){
+    .factory('FileManagerService', function($rootScope, $http, $compile, DialogBox){
+        return function($scope, repo){
             var Service = {
-                repo: repo,
                 configs: {},
                 selected_items: {},
+                items: [
+                    {
+                        'id': 1,
+                        'name': 'Müzikler',
+                        'icon': 'icon-folder-close'
+                    },
+                    {
+                        'id': 2,
+                        'name': 'Videolar',
+                        'icon': 'icon-folder-close'
+                    },
+                    {
+                        'id': 3,
+                        'name': 'Dosya1.mpg',
+                        'icon': 'icon-file'
+                    }
+                ],
                 init: function(repoConfigs){
                     angular.extends(this.configs, repoConfigs);
                     return this;
+                },
+                newFolder: function() {
+                    var dialog = DialogBox();
+                    dialog.scope.name = '';
+                    dialog.scope.hide = function(){
+                        dialog.hide();
+                    };
+                    dialog.scope.send = function(){
+                        console.log(dialog.scope.name);
+                        dialog.hide();
+                    };
+
+                    dialog.showTemplate('partials/dialog_new_folder.html', {
+                        closeButton: true,
+                        overlayClose: false,
+                        width: 500
+                    });
                 },
                 select: function(item) {
                     if (angular.isObject(this.selected_items[item.id]))
@@ -131,12 +170,6 @@ angular.module('meadowlark', ['ngResource', 'ngCookies'])
 
             return Service;
         };
-    })
-    .factory('StageFileManagerService', function(FileManagerService){
-        return FileManagerService('stage');
-    })
-    .factory('ProductionFileManagerService', function(FileManagerService){
-        return FileManagerService('production');
     })
     .factory('UserResource', function($resource, $location, $cookieStore){
         var UserResource = {
@@ -233,7 +266,7 @@ function HomepageController($scope) {
     $scope.$emit('setCurrentMenu', 'homepage');
 }
 
-function LoginController($scope, $location, LoadingBox, UserResource) {
+function LoginController($scope, $location, DialogBox, UserResource) {
     if (UserResource.is_authenticated) return;
 
     $scope.$emit('setPageHeader', 'Oturum Aç', true);
@@ -243,13 +276,14 @@ function LoginController($scope, $location, LoadingBox, UserResource) {
     $scope.form_error = '';
 
     $scope.send = function(user){
-        LoadingBox.show($scope, 'İşlem gerçekleştiriliyor... Lütfen bekleyiniz...');
+        var dialog = DialogBox($scope);
+        dialog.showMessage('İşlem gerçekleştiriliyor... Lütfen bekleyiniz...');
 
         UserResource.login(user, function(){
-            LoadingBox.hide();
+            dialog.hide();
             $location.path('/account');
         }, function(response){
-            LoadingBox.hide();
+            dialog.hide();
             $scope.form_error_visibility = true;
 
             if (response.status == 400)
@@ -264,7 +298,7 @@ function LoginController($scope, $location, LoadingBox, UserResource) {
     };
 }
 
-function RegisterController($scope, $location, LoadingBox, UserResource) {
+function RegisterController($scope, $location, DialogBox, UserResource) {
     if (UserResource.is_authenticated) return;
 
     $scope.$emit('setPageHeader', 'Kayıt Ol', true);
@@ -274,12 +308,14 @@ function RegisterController($scope, $location, LoadingBox, UserResource) {
     $scope.form_error = '';
 
     $scope.send = function(user){
-        LoadingBox.show($scope, 'İşlem gerçekleştiriliyor... Lütfen bekleyiniz...');
+        var dialog = DialogBox($scope);
+        dialog.showMessage('İşlem gerçekleştiriliyor... Lütfen bekleyiniz...');
+
         UserResource.register(user, function(){
-            LoadingBox.hide();
+            dialog.hide();
             $location.path('/welcome');
         }, function(response){
-            LoadingBox.hide();
+            dialog.hide();
             $scope.form_error_visibility = true;
             var response_data = angular.isObject(response.data) ? response.data : {};
             var validation_errors = angular.isObject(response_data.validation_errors) ? response_data.validation_errors : {};
@@ -340,44 +376,10 @@ function FileManagerController($scope, UserResource) {
     };
 }
 
-function StageFileManagerController($scope, $rootScope, StageFileManagerService) {
-    $scope.FileManager = StageFileManagerService;
-    $scope.repo = [
-        {
-            'id': 1,
-            'name': 'Müzikler',
-            'icon': 'icon-folder-close'
-        },
-        {
-            'id': 2,
-            'name': 'Videolar',
-            'icon': 'icon-folder-close'
-        },
-        {
-            'id': 3,
-            'name': 'Dosya1.mpg',
-            'icon': 'icon-file'
-        }
-    ];
+function StageFileManagerController($scope, $rootScope, FileManagerService) {
+    $scope.FileManager = FileManagerService($scope, 'stage');
 }
 
-function ProductionFileManagerController($scope, $rootScope, ProductionFileManagerService) {
-    $scope.FileManager = ProductionFileManagerService;
-    $scope.repo = [
-        {
-            'id': 1,
-            'name': 'Müzikler',
-            'icon': 'icon-folder-close'
-        },
-        {
-            'id': 2,
-            'name': 'Videolar',
-            'icon': 'icon-folder-close'
-        },
-        {
-            'id': 3,
-            'name': 'Dosya1.mpg',
-            'icon': 'icon-file'
-        }
-    ];
+function ProductionFileManagerController($scope, $rootScope, FileManagerService) {
+    $scope.FileManager = FileManagerService($scope, 'production');
 }
