@@ -9,7 +9,13 @@
     <title></title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
+    <link href='http://fonts.googleapis.com/css?family=Comfortaa:400,300,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <link rel="stylesheet" href="styles/bootstrap.css">
+    <link rel="stylesheet" href="components/font-awesome/css/font-awesome.min.css" />
+    <!--[if lt IE 7]>
+        <link rel="stylesheet" href="components/font-awesome/css/font-awesome-ie7.min.css" />
+    <![endif]-->
     <link rel="stylesheet" href="styles/main.css">
   </head>
   <body ng-app="meadowlarkWebApp">
@@ -23,22 +29,82 @@
     <![endif]-->
 
     <!-- Add your site or application content here -->
-    <div class="container" ng-view></div>
+    <div ng-controller="MainCtrl">
 
+        <div id="header">
+            <div class="container">
+                <div class="row">
+                    <div class="span12">
+                        <a class="brand pull-left" href="#/">Meadowlark</a>
+                        <ul class="nav nav-pills pull-left">
+                            <li ng-class="isCurrentMenu('homepage')"><a href="#/">Anasayfa</a></li>
+                            <li ng-class="isCurrentMenu('account')"><a href="#/account">Hesabım</a></li>
+                            <li ng-class="isCurrentMenu('file-manager')"><a href="#/file-manager">Dosya Yöneticisi</a></li>
+                            <li ng-class="isCurrentMenu('history')"><a href="#/history">İşlem Geçmişi</a></li>
+                        </ul>
+                        <ul class="nav nav-pills pull-right" ng-hide="UserResource.isAuthenticated">
+                            <li ng-class="isCurrentMenu('login')"><a href="#/login">Oturum Aç</a></li>
+                            <li ng-class="isCurrentMenu('register')"><a href="#/register">Kayıt Ol</a></li>
+                        </ul>
+                        <ul class="nav nav-pills pull-right" ng-show="UserResource.isAuthenticated">
+                            <li><a href="javascript:;" ng-click="UserResource.logout()">Oturumu Kapat</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-header" ng-show="pageHeaderVisibility">
+            <div class="container">
+                <div class="row">
+                    <div class="span12">
+                        <div class="page-header">
+                            <h1>{{pageHeader}}</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-view></div>
+
+        <div id="footer">
+            <div class="container">
+                <div class="row12">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- build:js scripts/scripts.js -->
+    <script src="components/PicoModal/src/picoModal.js"></script>
     <script src="components/angular/angular.js"></script>
     <script src="components/angular-resource/angular-resource.js"></script>
     <script src="components/angular-cookies/angular-cookies.js"></script>
-
-    <!-- build:js scripts/scripts.js -->
     <script src="scripts/app.js"></script>
+    <script src="scripts/services/dialog_box.js"></script>
+    <script src="scripts/services/file_manager.js"></script>
+    <script src="scripts/services/user_resource.js"></script>
+    <script src="scripts/controllers/homepage.js"></script>
+    <script src="scripts/controllers/welcome.js"></script>
+    <script src="scripts/controllers/file_manager.js"></script>
+    <script src="scripts/controllers/login.js"></script>
+    <script src="scripts/controllers/register.js"></script>
+    <script src="scripts/controllers/account.js"></script>
+    <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/controllers/stage_file_manager.js"></script>
+    <script src="scripts/controllers/production_file_manager.js"></script>
     <!-- endbuild -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+    <!--
     <script>
       var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
       (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
       g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
       s.parentNode.insertBefore(g,s)}(document,'script'));
     </script>
+    -->
   </body>
 </html>
